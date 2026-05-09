@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cube Catcher - Mini Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #gameCanvas {
+            border: 3px solid white;
+            background-color: #111;
+        }
+        #scoreUI {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="scoreUI">Score: <span id="scoreVal">0</span></div>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreUI = document.getElementById("scoreVal");
+
+        // GAME VARIABLES
+        let score = 0;
+
+        // Player (Red Cube)
+        const player = { 
+            x: 225, 
+            y: 175, 
+            size: 40, 
+            color: "red", 
+            speed: 5 
+        };
+
+        // Targets (Blue Cubes array)
+        let targets = [];
+
+        // Keyboard keys state
+        const keys = {};
+
+        // =============== INPUT : KEYBOARD ===============
+        window.addEventListener("keydown", e => keys[e.key] = true);
+        window.addEventListener("keyup", e => keys[e.key] = false);
+
+        // =============== INPUT : MOUSE CLICK ===============
+        canvas.addEventListener("mousedown", e => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Check if clicked on any target cube
+            targets = targets.filter(t => {
+                const clicked = 
+                    mouseX >= t.x && 
+                    mouseX <= t.x + t.size &&
+                    mouseY >= t.y && 
+                    mouseY <= t.y + t.size;
+
+                if (clicked) {
+                    score += 10; // Add score when caught
+                    scoreUI.innerText = score;
+                    return false; // Remove caught cube
+                }
+                return true; // Keep uncaught cubes
+            });
+        });
+
+        // =============== LOGIC : SPAWN TARGETS RANDOMLY ===============
+        function spawnTarget() {
+            if (targets.length < 5) { // Max 5 cubes at a time
+                targets.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: Math.random() * (canvas.height - 30),
+                    size: 30,
+                    color: "blue"
+                });
+            }
+        }
+        // Spawn new cube every 2 seconds
+        setInterval(spawnTarget, 2000);
+
+        // =============== LOGIC : UPDATE POSITIONS ===============
+        function update() {
+            // Player Movement (Arrow Keys + WASD)
+            if (keys["ArrowUp"]    || keys["w"]) player.y -= player.speed;
+            if (keys["ArrowDown"]  || keys["s"]) player.y += player.speed;
+            if (keys["ArrowLeft"]  || keys["a"]) player.x -= player.speed;
+            if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+
+            // Keep player inside screen boundary
+            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+        }
+
+        // =============== DRAW / RENDER EVERYTHING ===============
+        function render() {
+            // Clear screen
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw all target cubes
+            targets.forEach(t => {
+                ctx.fillStyle = t.color;
+                ctx.fillRect(t.x, t.y, t.size, t.size);
+            });
+
+            // Draw player cube
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+
+            update();
+            requestAnimationFrame(render); // Loop forever
+        }
+
+        // Start game
+        render();
+    </script>
+
+</body>
+</html>
