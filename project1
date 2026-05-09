@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Drawing App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        #myCanvas {
+            border: 2px solid #333;
+            background-color: white;
+            cursor: crosshair;
+            border-radius: 8px;
+        }
+        .controls {
+            margin-bottom: 15px;
+        }
+        button, input {
+            padding: 8px 15px;
+            margin: 0 8px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        #clearBtn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        #colorPicker {
+            width: 50px;
+            height: 35px;
+            padding: 0;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🎨 Interactive Drawing App - HTML5 Canvas</h2>
+
+    <div class="controls">
+        <label>Brush Color: </label>
+        <input type="color" id="colorPicker" value="#000000">
+        
+        <label>Brush Size: </label>
+        <input type="range" id="brushSize" min="2" max="30" value="5">
+        
+        <button id="clearBtn">Clear Screen</button>
+    </div>
+
+    <canvas id="myCanvas" width="800" height="500"></canvas>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Variables
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let brushColor = "#000000";
+        let brushSize = 5;
+
+        // Set initial styles
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // ------------------- EVENT LISTENERS -------------------
+
+        // Start drawing when mouse pressed
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            // Get mouse position relative to canvas
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+
+        // Draw while mouse moving
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return; // stop if not drawing
+
+            drawLine(lastX, lastY, e.offsetX, e.offsetY);
+            
+            // Update last position
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+
+        // Stop drawing when mouse released or leaves canvas
+        canvas.addEventListener("mouseup", () => isDrawing = false);
+        canvas.addEventListener("mouseout", () => isDrawing = false);
+
+        // Change brush color
+        document.getElementById("colorPicker").addEventListener("input", (e) => {
+            brushColor = e.target.value;
+        });
+
+        // Change brush size
+        document.getElementById("brushSize").addEventListener("input", (e) => {
+            brushSize = parseInt(e.target.value);
+        });
+
+        // Clear screen
+        document.getElementById("clearBtn").addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // ------------------- DRAW FUNCTION -------------------
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = brushColor;
+            ctx.lineWidth = brushSize;
+            ctx.stroke();
+        }
+    </script>
+
+</body>
+</html>
